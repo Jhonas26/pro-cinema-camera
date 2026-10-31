@@ -4,452 +4,388 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>PRO CINEMA V3</title>
+<title>PRO CINEMA V4</title>
 <style>
 *{box-sizing:border-box}
-:root{--red:#f04444;--bg:#101114;--panel:#1c1d21}
-body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif;font-size:13px}
-button,select{font:inherit;color:white;background:#292b30;border:1px solid #484a50;border-radius:6px;padding:9px}
-button:disabled{opacity:.35}
-button.active{background:#682527;border-color:var(--red)}
-button:active{opacity:.7}
-header{height:49px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#191a1e}
-.brand{font-weight:900;letter-spacing:1px}
-.red{color:var(--red)}
-#time{font-family:monospace;font-size:17px;color:var(--red)}
-#viewport{position:relative;background:black;width:100%;aspect-ratio:16/9;overflow:hidden}
-#camera{width:100%;height:100%;object-fit:contain}
+body{margin:0;background:#101114;color:#eee;font:13px Arial,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#1d1e22}
+b em{color:#f44;font-style:normal}
+#stage{position:relative;background:#000;aspect-ratio:16/9;overflow:hidden}
+#source{display:none}
+#screen{width:100%;height:100%;object-fit:contain}
 #guides{position:absolute;inset:0;pointer-events:none}
-.thirds{
+#guides.thirds{
 background:
-linear-gradient(90deg,transparent 33.2%,#ffffff75 33.3%,transparent 33.5%,transparent 66.5%,#ffffff75 66.6%,transparent 66.8%),
-linear-gradient(0deg,transparent 33.2%,#ffffff75 33.3%,transparent 33.5%,transparent 66.5%,#ffffff75 66.6%,transparent 66.8%)
+linear-gradient(90deg,transparent 33.2%,#ffffff88 33.3%,transparent 33.5%,transparent 66.5%,#ffffff88 66.6%,transparent 66.8%),
+linear-gradient(0deg,transparent 33.2%,#ffffff88 33.3%,transparent 33.5%,transparent 66.5%,#ffffff88 66.6%,transparent 66.8%)
 }
-.cross:after{content:"+";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:32px;color:#fff}
-.cinema:before,.cinema:after{content:"";position:absolute;width:100%;height:12%;left:0;background:#000c}
-.cinema:before{top:0}
-.cinema:after{bottom:0}
-.hud{position:absolute;top:8px;left:10px;display:flex;gap:6px;pointer-events:none}
-.tag{background:#000a;padding:5px;border-radius:3px;font-size:11px}
-#bottomHud{position:absolute;bottom:8px;left:10px}
-.panel{padding:10px;background:var(--panel)}
-.toolbar{display:flex;gap:7px;align-items:center;overflow-x:auto;padding-bottom:9px}
-.toolbar button{white-space:nowrap}
-.section{border-top:1px solid #393a40;padding:10px 0}
-.label{font-size:10px;color:#aaa;letter-spacing:1px;margin-bottom:8px}
-.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-input[type=range]{accent-color:var(--red);flex:1;min-width:110px}
-#record{height:55px;width:55px;border:4px solid #ddd;border-radius:50%;background:var(--red);flex-shrink:0}
-#record.recording{border-radius:12px}
-#status{color:#aaa;font-size:11px;padding:9px;background:#111;line-height:1.5}
-#downloads a{display:block;color:#80caff;padding:10px}
-small{color:#999}
-select{max-width:145px}
-@media(orientation:landscape){
-main{display:grid;grid-template-columns:minmax(0,1fr) 225px}
-#viewport{align-self:start}
-.panel{height:calc(100dvh - 49px);overflow:auto}
-header{height:49px}
-.toolbar{flex-wrap:wrap}
+#guides.cross:after{content:'+';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:36px}
+#guides.cinema:before,#guides.cinema:after{content:'';position:absolute;left:0;width:100%;height:12%;background:#000c}
+#guides.cinema:before{top:0}
+#guides.cinema:after{bottom:0}
+.hud{position:absolute;top:8px;left:8px;background:#0009;padding:5px}
+main{padding:12px}
+section{padding:10px 0;border-bottom:1px solid #34363b}
+h3{font-size:11px;color:#aaa;letter-spacing:1px}
+button,select{background:#292b30;color:white;border:1px solid #555;border-radius:6px;padding:9px;margin:3px}
+button:disabled,input:disabled{opacity:.4}
+input{accent-color:#f44;max-width:100%}
+label{display:inline-flex;align-items:center;gap:5px;margin:5px}
+#rec{background:#b21e29;border-color:#f44;font-weight:bold}
+#rec.on{background:#f44}
+#hist{width:100%;height:70px;background:#090909}
+#meter{height:9px;background:#333;border-radius:5px;overflow:hidden}
+#level{height:100%;width:0;background:#4c9}
+#status{color:#bbb;white-space:pre-wrap;line-height:1.5}
+a{color:#8cf;display:block;margin:10px 0}
+@media(orientation:landscape) and (min-width:650px){
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px}
+main{height:calc(100dvh - 45px);overflow:auto}
 }
 </style>
 </head>
 <body>
 
 <header>
-<div class="brand">PRO <span class="red">CINEMA</span> V3</div>
-<div id="time">00:00:00</div>
-<div id="recLabel">STANDBY</div>
+<b>PRO <em>CINEMA</em> V4</b>
+<span id="clock">00:00:00</span>
+<span id="state">STANDBY</span>
 </header>
 
-<main>
-<div id="viewport">
-<video id="camera" autoplay muted playsinline></video>
+<div class="layout">
+<div id="stage">
+<video id="source" autoplay muted playsinline></video>
+<canvas id="screen"></canvas>
 <div id="guides"></div>
-
-<div class="hud">
-<span class="tag" id="resLabel">1080P</span>
-<span class="tag" id="fpsLabel">FPS --</span>
-<span class="tag" id="zoomLabel">1.0X</span>
+<span class="hud" id="actual">CAMERA OFF</span>
 </div>
 
-<div id="bottomHud" class="tag">PRO CINEMA • LIVE</div>
-</div>
+<main>
+<section>
+<button id="start">START CAMERA</button>
+<button id="flip">FLIP</button>
+<button id="full">FULLSCREEN</button>
+<button id="rec" disabled>● RECORD</button>
+</section>
 
-<div class="panel">
-
-<div class="toolbar">
-<button id="start" onclick="startCamera()">START CAMERA</button>
-<button onclick="flipCamera()">FLIP</button>
-<button onclick="toggleFull()">FULLSCREEN</button>
-</div>
-
-<div class="section">
-<div class="label">RECORDING</div>
-<div class="controls">
-<button id="record" onclick="toggleRecord()" disabled></button>
-<div>
-<strong id="recordState">READY</strong>
-<br>
-<small id="formatLabel">WEBM</small>
-</div>
-</div>
-</div>
-
-<div class="section">
-<div class="label">CAMERA SETTINGS</div>
-<div class="controls">
-<select id="resolution" onchange="restartCamera()">
-<option value="1280">720P</option>
-<option value="1920" selected>1080P</option>
+<section>
+<h3>RESOLUTION / FRAME RATE</h3>
+<select id="resolution">
+<option value="1280">720P HD</option>
+<option value="1920" selected>1080P FHD</option>
+<option value="3840">4K UHD (EXPERIMENTAL)</option>
 </select>
-<select id="fps" onchange="restartCamera()">
-<option value="24">24 FPS</option>
-<option value="30" selected>30 FPS</option>
-<option value="60">60 FPS</option>
+<select id="fps">
+<option>24</option>
+<option selected>30</option>
+<option>60</option>
 </select>
-</div>
-</div>
+<button id="apply">APPLY</button>
+<div id="resolutionNote"></div>
+</section>
 
-<div class="section">
-<div class="label">ZOOM CONTROL</div>
-<div class="controls">
-<button onclick="quickZoom(1)">1X</button>
-<button onclick="quickZoom(2)">2X</button>
-<button onclick="quickZoom(4)">4X</button>
-</div>
-<div class="controls" style="margin-top:10px">
-<input type="range" id="zoom" min="1" max="4" step=".1" value="1" oninput="setZoom()">
-<strong id="zoomValue">1.0X</strong>
-</div>
-<small id="zoomMode">Checking zoom support...</small>
-</div>
+<section>
+<h3>ZOOM / FOCUS</h3>
+<label>Zoom
+<input id="zoom" type="range" min="1" max="4" step=".1" value="1">
+<span id="zoomText">1.0x</span>
+</label>
+<div id="zoomNote"></div>
+<label>Focus
+<input id="focus" type="range" disabled>
+<span id="focusText">AUTO</span>
+</label>
+</section>
 
-<div class="section">
-<div class="label">CINEMATIC TOOLS</div>
-<div class="controls">
-<select id="guideSelect" onchange="setGuides()">
-<option value="">Guides OFF</option>
-<option value="thirds">Rule of Thirds</option>
-<option value="cross">Crosshair</option>
-<option value="cinema">Cinema Frame</option>
-</select>
-
-<select id="look" onchange="setLook()">
+<section>
+<h3>COLOR / FRAMING</h3>
+<select id="look">
 <option value="none">Natural</option>
 <option value="warm">Warm Film</option>
 <option value="cool">Cool Film</option>
 <option value="mono">Monochrome</option>
 <option value="fade">Faded Film</option>
 </select>
-</div>
-<small>Color looks affect preview only, not saved recordings.</small>
-</div>
+<select id="guide">
+<option value="">Guides OFF</option>
+<option value="thirds">Rule of Thirds</option>
+<option value="cross">Crosshair</option>
+<option value="cinema">Cinema Frame</option>
+</select>
+<label><input type="checkbox" id="burn">Record guides</label>
+<label><input type="checkbox" id="peak">Focus peaking (preview only)</label>
+</section>
 
-<div class="section">
-<div class="label">MANUAL EXPOSURE</div>
-<div class="controls">
-<input id="exposure" type="range" min="-2" max="2" step=".1" value="0" oninput="setExposure()" disabled>
-<strong id="expValue">AUTO</strong>
-</div>
-<small id="capabilities">Camera capabilities will appear here.</small>
-</div>
+<section>
+<h3>LIVE HISTOGRAM</h3>
+<canvas id="hist" width="256" height="70"></canvas>
+<h3>MICROPHONE LEVEL</h3>
+<div id="meter"><div id="level"></div></div>
+</section>
 
-<div id="status">Press START CAMERA to begin.</div>
+<section>
+<h3>STATUS</h3>
+<div id="status">Use Chrome over HTTPS. Press START CAMERA.</div>
 <div id="downloads"></div>
-
-</div>
+</section>
 </main>
+</div>
 
 <script>
-const $=id=>document.getElementById(id);
+const $=x=>document.getElementById(x);
+const v=$('source'),c=$('screen');
+const ctx=c.getContext('2d',{willReadFrequently:true});
+const hc=$('hist').getContext('2d');
+let stream,track,recorder,chunks=[],facing='environment';
+let nativeZoom=false,recording=false,recordCanvas,recordCtx,raf=0;
+let audioContext,analyser,audioDestination,audioSource,audioData,recordStream;
+let started=0,clockTimer=0,actualFPS=30,frameLast=0;
+const say=s=>$('status').textContent=s;
+const looks={
+none:'none',
+warm:'sepia(.25) saturate(1.2) contrast(1.08)',
+cool:'hue-rotate(12deg) saturate(.85) contrast(1.12)',
+mono:'grayscale(1) contrast(1.15)',
+fade:'contrast(.85) saturate(.7) brightness(1.08)'
+};
 
-let stream=null;
-let recorder=null;
-let chunks=[];
-let facing="environment";
-let recording=false;
-let timer=null;
-let elapsed=0;
-let nativeZoom=false;
-let track=null;
-
-const video=$("camera");
-
-function status(t){
-$("status").textContent=t;
-}
-
-async function startCamera(){
-if(recording)return;
-
+async function start(){
+if(recording){say('Stop recording before changing camera.');return}
+stopCamera();
+let desired=+$('resolution').value,fr=+$('fps').value;
+let choices=[desired,...[1920,1280].filter(n=>n<desired)];
+let error;
+for(const w of choices){
 try{
-if(!navigator.mediaDevices?.getUserMedia){
-throw Error("Use HTTPS in Chrome.");
-}
-
-if(stream){
-stream.getTracks().forEach(t=>t.stop());
-}
-
-let width=Number($("resolution").value);
-let fps=Number($("fps").value);
-
 stream=await navigator.mediaDevices.getUserMedia({
-audio:true,
 video:{
 facingMode:{ideal:facing},
-width:{ideal:width},
-height:{ideal:Math.round(width*9/16)},
-frameRate:{ideal:fps}
-}
+width:{ideal:w},
+height:{ideal:Math.round(w*9/16)},
+frameRate:{ideal:fr}
+},
+audio:true
 });
-
-video.srcObject=stream;
-await video.play();
-
 track=stream.getVideoTracks()[0];
-
-let settings=track.getSettings();
-let caps=track.getCapabilities?.()||{};
-
-$("resLabel").textContent=
-(settings.width||"?")+"×"+(settings.height||"?");
-
-$("fpsLabel").textContent=
-"FPS "+(settings.frameRate||"?");
-
+const s=track.getSettings();
+if(w===3840&&(s.width<3840||s.height<2160)){
+stream.getTracks().forEach(t=>t.stop());
+stream=null;
+continue
+}
+break
+}catch(e){error=e;stream=null}
+}
+if(!stream){
+say('Camera unavailable: '+(error?.message||'Requested modes not supported'));
+return
+}
+v.srcObject=stream;
+await v.play();
+let s=track.getSettings(),caps=track.getCapabilities?.()||{};
+c.width=s.width||1280;
+c.height=s.height||720;
+actualFPS=Math.min(30,s.frameRate||30);
+$('actual').textContent=`${c.width} × ${c.height} | ${s.frameRate||'?'} FPS`;
+$('resolutionNote').textContent=`Actual camera output: ${c.width} × ${c.height}. ${desired>c.width?'Requested resolution unavailable; using fallback.':''}`;
 nativeZoom=!!caps.zoom;
-
-$("zoom").min=nativeZoom?caps.zoom.min:1;
-$("zoom").max=nativeZoom?caps.zoom.max:4;
-$("zoom").step=nativeZoom?(caps.zoom.step||.1):.1;
-$("zoom").value=nativeZoom?
-(settings.zoom||caps.zoom.min):1;
-
-$("zoomMode").textContent=nativeZoom?
-"Native camera zoom available":
-"Preview-only zoom (not recorded)";
-
-$("zoomValue").textContent=
-Number($("zoom").value).toFixed(1)+"X";
-
-$("zoomLabel").textContent=$("zoomValue").textContent;
-
-video.style.transform="none";
-
-const exp=caps.exposureCompensation;
-const expInput=$("exposure");
-
-if(exp){
-expInput.disabled=false;
-expInput.min=exp.min;
-expInput.max=exp.max;
-expInput.step=exp.step||.1;
-expInput.value=settings.exposureCompensation||0;
-$("expValue").textContent=expInput.value;
-}else{
-expInput.disabled=true;
-$("expValue").textContent="AUTO";
+$('zoom').min=nativeZoom?caps.zoom.min:1;
+$('zoom').max=nativeZoom?caps.zoom.max:4;
+$('zoom').step=nativeZoom?(caps.zoom.step||.1):.1;
+$('zoom').value=nativeZoom?(s.zoom||caps.zoom.min):1;
+$('zoomNote').textContent=nativeZoom?'Native camera zoom':'Software crop; recorded image is enlarged, not optically improved';
+$('focus').disabled=!caps.focusDistance;
+if(caps.focusDistance){
+$('focus').min=caps.focusDistance.min;
+$('focus').max=caps.focusDistance.max;
+$('focus').step=caps.focusDistance.step||.01;
+$('focus').value=s.focusDistance??caps.focusDistance.min;
+$('focusText').textContent=$('focus').value
+}else $('focusText').textContent='Not exposed';
+$('rec').disabled=false;
+await setupAudio();
+cancelAnimationFrame(raf);
+draw();
+say('Camera ready. Color look is included in saved recording. Focus peaking is preview-only.')
 }
 
-$("capabilities").textContent=
-"ISO: "+(caps.iso?"Exposed":"Unavailable")+
-" | Focus: "+(caps.focusDistance?"Exposed":"Unavailable")+
-" | Exposure: "+(exp?"Adjustable":"Auto only");
-
-$("record").disabled=false;
-$("recordState").textContent="READY";
-
-status("Camera ready. Actual settings depend on device support.");
-
-}catch(e){
-$("record").disabled=true;
-status("Camera error: "+e.message);
-}
+function stopCamera(){
+cancelAnimationFrame(raf);
+if(stream)stream.getTracks().forEach(t=>t.stop());
+stream=null;track=null;
+if(audioContext){audioContext.close();audioContext=null}
+v.srcObject=null;
+$('rec').disabled=true
 }
 
-async function restartCamera(){
-if(stream&&!recording)await startCamera();
-}
-
-async function flipCamera(){
-if(recording){
-status("Stop recording before flipping.");
-return;
-}
-facing=facing==="environment"?"user":"environment";
-await startCamera();
-}
-
-async function setZoom(){
-if(!track)return;
-
-let z=Number($("zoom").value);
-
-if(nativeZoom){
+async function setupAudio(){
 try{
-await track.applyConstraints({
-advanced:[{zoom:z}]
-});
-video.style.transform="none";
-}catch(e){
-status("Native zoom failed: "+e.message);
-return;
-}
-}else{
-video.style.transform="scale("+z+")";
-}
-
-$("zoomValue").textContent=z.toFixed(1)+"X";
-$("zoomLabel").textContent=z.toFixed(1)+"X";
+audioContext=new (window.AudioContext||window.webkitAudioContext)();
+await audioContext.resume();
+audioSource=audioContext.createMediaStreamSource(stream);
+analyser=audioContext.createAnalyser();
+analyser.fftSize=512;
+audioData=new Uint8Array(analyser.fftSize);
+audioDestination=audioContext.createMediaStreamDestination();
+audioSource.connect(analyser);
+audioSource.connect(audioDestination)
+}catch(e){say('Camera ready. Audio meter unavailable: '+e.message)}
 }
 
-function quickZoom(z){
-let slider=$("zoom");
-slider.value=Math.max(
-Number(slider.min),
-Math.min(z,Number(slider.max))
-);
-setZoom();
+function paint(target,overlay=false){
+let w=target.canvas.width,h=target.canvas.height;
+target.fillStyle='black';
+target.fillRect(0,0,w,h);
+target.save();
+target.filter=looks[$('look').value];
+let z=+$('zoom').value,scale=nativeZoom?1:z;
+let dw=w*scale,dh=h*scale;
+target.drawImage(v,(w-dw)/2,(h-dh)/2,dw,dh);
+target.restore();
+if(overlay&&$('burn').checked){
+let mode=$('guide').value;
+target.strokeStyle='#ffffff99';
+target.lineWidth=Math.max(1,w/1000);
+target.beginPath();
+if(mode==='thirds'){
+for(let i=1;i<3;i++){
+target.moveTo(w*i/3,0);
+target.lineTo(w*i/3,h);
+target.moveTo(0,h*i/3);
+target.lineTo(w,h*i/3)
+}}
+if(mode==='cross'){
+target.moveTo(w/2-20,h/2);
+target.lineTo(w/2+20,h/2);
+target.moveTo(w/2,h/2-20);
+target.lineTo(w/2,h/2+20)
+}
+if(mode==='cinema'){
+target.fillStyle='#000';
+target.fillRect(0,0,w,h*.12);
+target.fillRect(0,h*.88,w,h*.12)
+}
+target.stroke()
+}
 }
 
-async function setExposure(){
-if(!track)return;
-let value=Number($("exposure").value);
-
-try{
-await track.applyConstraints({
-advanced:[{exposureCompensation:value}]
-});
-$("expValue").textContent=value.toFixed(1);
-}catch(e){
-status("Exposure adjustment unavailable: "+e.message);
+function draw(t=0){
+raf=requestAnimationFrame(draw);
+if(!stream||v.readyState<2||t-frameLast<1000/Math.min(actualFPS,30))return;
+frameLast=t;
+paint(ctx);
+if(recording&&recordCtx)paint(recordCtx,true);
+let w=c.width,h=c.height,sw=128,sh=72;
+let sample=document.createElement('canvas');
+sample.width=sw;sample.height=sh;
+let sc=sample.getContext('2d',{willReadFrequently:true});
+sc.drawImage(c,0,0,sw,sh);
+let data=sc.getImageData(0,0,sw,sh).data;
+let bins=new Array(64).fill(0),peak=$('peak').checked;
+if(peak){ctx.strokeStyle='#f33';ctx.lineWidth=Math.max(2,w/500)}
+for(let y=1;y<sh-1;y++)for(let x=1;x<sw-1;x++){
+let p=(y*sw+x)*4,l=(data[p]+data[p+1]+data[p+2])/3;
+bins[Math.min(63,Math.floor(l/4))]++;
+if(peak){
+let q=p+4,r=p+sw*4;
+let edge=Math.abs(l-(data[q]+data[q+1]+data[q+2])/3)+Math.abs(l-(data[r]+data[r+1]+data[r+2])/3);
+if(edge>95){
+ctx.fillStyle='#ff3333';
+ctx.fillRect(x*w/sw,y*h/sh,w/sw,h/sh)
+}
+}}
+hc.clearRect(0,0,256,70);
+hc.fillStyle='#ddd';
+let max=Math.max(1,...bins);
+bins.forEach((n,i)=>hc.fillRect(i*4,70-n/max*68,3,n/max*68));
+if(analyser){
+analyser.getByteTimeDomainData(audioData);
+let sum=0;
+for(let b of audioData)sum+=((b-128)/128)**2;
+$('level').style.width=Math.min(100,Math.sqrt(sum/audioData.length)*250)+'%'
 }
 }
 
-function setGuides(){
-$("guides").className=$("guideSelect").value;
-}
-
-function setLook(){
-const looks={
-none:"none",
-warm:"sepia(.24) saturate(1.2) contrast(1.08)",
-cool:"hue-rotate(12deg) saturate(.85) contrast(1.12)",
-mono:"grayscale(1) contrast(1.2)",
-fade:"contrast(.85) saturate(.7) brightness(1.08)"
+$('start').onclick=()=>start().catch(e=>say('Camera error: '+e.message));
+$('apply').onclick=()=>$('start').click();
+$('flip').onclick=()=>{
+facing=facing==='environment'?'user':'environment';
+$('start').click()
 };
-video.style.filter=looks[$("look").value];
-}
+$('full').onclick=()=>document.fullscreenElement?
+document.exitFullscreen():
+document.documentElement.requestFullscreen().catch(e=>say(e.message));
+$('guide').onchange=()=>$('guides').className=$('guide').value;
 
-async function toggleFull(){
+$('zoom').oninput=async()=>{
+let z=+$('zoom').value;
+$('zoomText').textContent=z.toFixed(1)+'x';
+if(nativeZoom&&track){
+try{await track.applyConstraints({advanced:[{zoom:z}]})}
+catch(e){say('Zoom unavailable: '+e.message)}
+}
+};
+
+$('focus').oninput=async()=>{
+if(!track)return;
 try{
-if(!document.fullscreenElement){
-await document.documentElement.requestFullscreen();
-}else{
-await document.exitFullscreen();
-}
-}catch(e){
-status("Fullscreen unavailable in this browser.");
-}
-}
+await track.applyConstraints({advanced:[{focusMode:'manual',focusDistance:+$('focus').value}]});
+$('focusText').textContent=$('focus').value
+}catch(e){say('Manual focus rejected by device: '+e.message)}
+};
 
-function formatTime(s){
-let h=String(Math.floor(s/3600)).padStart(2,"0");
-let m=String(Math.floor(s%3600/60)).padStart(2,"0");
-let sec=String(s%60).padStart(2,"0");
-return h+":"+m+":"+sec;
+$('rec').onclick=()=>{
+if(recording){recorder.stop();return}
+if(!stream||!window.MediaRecorder){
+say('Start camera first, or use a browser with MediaRecorder.');
+return
 }
-
-function toggleRecord(){
-if(recording){
-recorder.stop();
-return;
-}
-
-if(!stream)return;
-
-if(!window.MediaRecorder){
-status("Recording is not supported in this browser.");
-return;
-}
-
 try{
-const types=[
-"video/webm;codecs=vp8,opus",
-"video/webm;codecs=vp9,opus",
-"video/webm",
-"video/mp4"
-];
-
-const mime=types.find(t=>MediaRecorder.isTypeSupported(t));
-
+recordCanvas=document.createElement('canvas');
+recordCanvas.width=c.width;
+recordCanvas.height=c.height;
+recordCtx=recordCanvas.getContext('2d');
+paint(recordCtx,true);
+let videoStream=recordCanvas.captureStream(actualFPS);
+let tracks=[...videoStream.getVideoTracks(),...(audioDestination?.stream.getAudioTracks()||[])];
+recordStream=new MediaStream(tracks);
+let mime=['video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(x=>MediaRecorder.isTypeSupported(x));
+recorder=new MediaRecorder(recordStream,mime?{mimeType:mime}:{});
 chunks=[];
-
-recorder=new MediaRecorder(
-stream,mime?{mimeType:mime}:{}
-);
-
-$("formatLabel").textContent=
-recorder.mimeType||"Browser default";
-
-recorder.ondataavailable=e=>{
-if(e.data.size>0)chunks.push(e.data);
-};
-
-recorder.onerror=e=>{
-status("Recording error occurred.");
-};
-
+recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
 recorder.onstop=()=>{
 recording=false;
-clearInterval(timer);
-
-$("record").classList.remove("recording");
-$("recLabel").textContent="STANDBY";
-$("recordState").textContent="READY";
-
-if(!chunks.length){
-status("No recording data received.");
-return;
-}
-
-const type=recorder.mimeType||"video/webm";
-const ext=type.includes("mp4")?"mp4":"webm";
-
-const blob=new Blob(chunks,{type});
-const url=URL.createObjectURL(blob);
-
-const a=document.createElement("a");
+clearInterval(clockTimer);
+$('rec').textContent='● RECORD';
+$('rec').classList.remove('on');
+$('state').textContent='STANDBY';
+recordStream.getTracks().forEach(t=>t.stop());
+if(!chunks.length){say('No video data received.');return}
+let type=recorder.mimeType||'video/webm';
+let ext=type.includes('mp4')?'mp4':'webm';
+let blob=new Blob(chunks,{type});
+let url=URL.createObjectURL(blob);
+let a=document.createElement('a');
 a.href=url;
-a.download="PRO_CINEMA_"+Date.now()+"."+ext;
-a.textContent="DOWNLOAD VIDEO • "+(blob.size/1048576).toFixed(1)+" MB";
-
-$("downloads").appendChild(a);
-status("Recording complete. Tap DOWNLOAD VIDEO.");
+a.download='PRO_CINEMA_V4_'+Date.now()+'.'+ext;
+a.textContent=`DOWNLOAD VIDEO (${(blob.size/1048576).toFixed(1)} MB)`;
+$('downloads').appendChild(a);
+say(`Recording ready. Canvas output: ${recordCanvas.width} × ${recordCanvas.height}. This does not guarantee native sensor detail.`)
 };
-
+recorder.onerror=()=>say('Recording error. Try 720p and fewer effects.');
 recorder.start(1000);
 recording=true;
-elapsed=0;
-
-$("time").textContent="00:00:00";
-$("record").classList.add("recording");
-$("recLabel").textContent="● REC";
-$("recordState").textContent="RECORDING";
-
-timer=setInterval(()=>{
-elapsed++;
-$("time").textContent=formatTime(elapsed);
-},1000);
-
-status("Recording original camera stream.");
-
-}catch(e){
-status("Recording failed: "+e.message);
-}
-}
+started=Date.now();
+$('rec').textContent='■ STOP';
+$('rec').classList.add('on');
+$('state').textContent='● REC';
+clockTimer=setInterval(()=>{
+let n=Math.floor((Date.now()-started)/1000);
+$('clock').textContent=[Math.floor(n/3600),Math.floor(n/60)%60,n%60].map(x=>String(x).padStart(2,'0')).join(':')
+},250);
+say('Recording canvas output with color look. Guides included only if Record guides is checked.')
+}catch(e){say('Could not start recording: '+e.message)}
+};
 </script>
 </body>
 </html>
